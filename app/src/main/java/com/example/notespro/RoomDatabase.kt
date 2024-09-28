@@ -1,7 +1,6 @@
 package com.example.notespro
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.*

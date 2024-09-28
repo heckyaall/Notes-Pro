@@ -50,6 +50,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.navigation.compose)
+    implementation (libs.accompanist.flowlayout.v0291alpha)
     implementation (libs.androidx.compose.ui.ui.v150.x6)
     implementation (libs.androidx.material.v150)
     implementation (libs.androidx.foundation.v150)
@@ -73,6 +75,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.navigation.runtime.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
