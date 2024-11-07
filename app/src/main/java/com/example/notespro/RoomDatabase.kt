@@ -22,11 +22,11 @@ interface NoteDao {
     @Query("SELECT * FROM notes_table")
     fun getAllNotes(): Flow<List<Note>>
 
-    @Insert
-    suspend fun addOrUpdate(note: Note)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun addOrUpdate(note: Note): Long // Return the row ID of the inserted record
 
     @Delete
-    suspend fun delete(note: Note)
+    suspend fun delete(note: Note): Int // Return the number of rows deleted
 
     @Query("SELECT * FROM notes_table WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%'")
     fun searchNotes(query: String): Flow<List<Note>>

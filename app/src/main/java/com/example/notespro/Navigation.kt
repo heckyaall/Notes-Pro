@@ -1,22 +1,21 @@
 package com.example.notespro
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 
 @Composable
-fun Navigation(context : Context, navController: NavHostController){
+fun Navigation(navController: NavHostController, viewModel: NoteViewModel){
     NavHost(startDestination = Home.Route, navController = navController){
         composable(Home.Route){
-            Home()
+            Home(navController, viewModel)
         }
         composable(ViewNote.Route){
             Notes()
         }
         composable(Add.Route){
-            AddNote()
+            AddNote(viewModel, navController)
         }
         composable(Edit.Route){
             EditNote()
