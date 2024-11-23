@@ -4,31 +4,37 @@ import androidx.lifecycle.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.update
+
 
 class NoteRepository(private val noteDao: NoteDao) {
-
-    // Fetch all notes as a Flow
+    fun getNoteById(noteId: Int): Flow<Note?> {
+        return noteDao.getNoteById(noteId)
+    }
     fun getAllNotes(): Flow<List<Note>> = noteDao.getAllNotes()
 
-    // Add or update a note
+    suspend fun updateNote(note: Note) {
+        noteDao.updateNote(note)
+    }
+    suspend fun deleteNoteById(noteId: Int) {
+        noteDao.deleteNoteById(noteId)
+    }
     suspend fun addOrUpdate(note: Note) = noteDao.addOrUpdate(note)
 
-    // Delete a note
-    suspend fun delete(note: Note) = noteDao.delete(note)
-
-    // Search notes by query
     fun searchNotes(query: String): Flow<List<Note>> = noteDao.searchNotes(query)
 }
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
-
-    val notesFlow: Flow<List<Pair<String, String>>> = repository.getAllNotes().map { notes ->
-        notes.map { note -> Pair(note.title, note.content) }
+    fun getNoteById(noteId: Int): Flow<Note?> {
+        return repository.getNoteById(noteId)
     }
-    // Add a new note
+
+    fun updateNote(note: Note) {
+        viewModelScope.launch {
+            repository.updateNote(note)}
+        }
     fun addNote(title: String, content: String) {
         viewModelScope.launch {
             val newNote = Note(title = title, content = content)
@@ -36,15 +42,12 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         }
     }
 
-    // StateFlow to observe notes
-    private val _notes = MutableStateFlow<List<Note>>(emptyList())
-    val notes: StateFlow<List<Note>> = _notes
+    fun deleteNoteById(noteId: Int) {
+        viewModelScope.launch {
+            repository.deleteNoteById(noteId)
+        }
+    }
 
-    // StateFlow for search results
-    private val _searchResults = MutableStateFlow<List<Note>>(emptyList())
-    val searchResults: StateFlow<List<Note>> = _searchResults
-
-    // Collect all notes in the ViewModel's lifecycle
     init {
         viewModelScope.launch {
             repository.getAllNotes().collect { notes ->
@@ -52,27 +55,22 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
             }
         }
     }
+    private val _notes = MutableStateFlow<List<Note>>(listOf()) // List of all notes
+    val notes: StateFlow<List<Note>> get() = _notes
 
-    // Search for notes based on a query
+    private val _searchResults = MutableStateFlow<List<Note>>(listOf()) // Search results
+    val searchResults: StateFlow<List<Note>> get() = _searchResults
+
     fun search(query: String) {
-        viewModelScope.launch {
-            repository.searchNotes(query).collect { results ->
-                _searchResults.value = results
+        if (query.isBlank()) {
+            _searchResults.update { emptyList() }
+        } else {
+            _searchResults.update {
+                _notes.value.filter { it.title.contains(query, ignoreCase = true) }
             }
         }
     }
-
-    // Add or update a note
-    fun addOrUpdate(note: Note) = viewModelScope.launch {
-        repository.addOrUpdate(note)
-    }
-
-    // Delete a note
-    fun delete(note: Note) = viewModelScope.launch {
-        repository.delete(note)
-    }
 }
-
 class NotesViewModelFactory(private val noteRepository: NoteRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(NoteViewModel::class.java)) {

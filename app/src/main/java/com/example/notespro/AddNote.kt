@@ -1,6 +1,7 @@
 package com.example.notespro
 
 import android.content.Context
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

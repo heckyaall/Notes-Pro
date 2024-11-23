@@ -30,6 +30,15 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes_table WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%'")
     fun searchNotes(query: String): Flow<List<Note>>
+
+    @Query("SELECT * FROM notes_table WHERE id = :noteId")
+    fun getNoteById(noteId: Int): Flow<Note?>
+
+    @Update
+    suspend fun updateNote(note: Note)
+
+    @Query("DELETE FROM notes_table WHERE id = :noteId")
+    suspend fun deleteNoteById(noteId: Int)
 }
 @Database(entities = [Note::class], version = 1, exportSchema = false)
 abstract class NoteDatabase : RoomDatabase() {
